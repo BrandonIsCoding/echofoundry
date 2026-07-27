@@ -1,0 +1,15 @@
+﻿project:
+  name: EchoFoundry
+  environment: local
+
+database:
+  host: localhost
+  port: 5432
+  name: echofoundry
+  user: echofoundry
+  password: echofoundry
+
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  prices_dir: data/prices
