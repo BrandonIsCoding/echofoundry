@@ -1,0 +1,15 @@
+﻿services:
+  postgres:
+    image: postgres:16
+    container_name: echofoundry-postgres
+    environment:
+      POSTGRES_DB: echofoundry
+      POSTGRES_USER: echofoundry
+      POSTGRES_PASSWORD: echofoundry
+    ports:
+      - "5432:5432"
+    volumes:
+      - echofoundry_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  echofoundry_postgres_data:
