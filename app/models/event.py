@@ -1,3 +1,9 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from datetime import datetime
 
 from sqlalchemy import (
@@ -13,8 +19,16 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
 
+if TYPE_CHECKING:
+    from app.models.transcript import Transcript
 
 class Event(Base):
+
+    transcripts: Mapped[list[Transcript]] = relationship(
+    back_populates="event",
+    cascade="all, delete-orphan",
+)
+
     """A market-relevant corporate event with temporal provenance."""
 
     __tablename__ = "events"
