@@ -21,12 +21,18 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.transcript import Transcript
+    from app.models.filing import Filing
 
 class Event(Base):
 
     transcripts: Mapped[list[Transcript]] = relationship(
     back_populates="event",
     cascade="all, delete-orphan",
+)
+    filings: Mapped[list[Filing]] = relationship(
+    back_populates="event",
+    cascade="all, delete-orphan",
+
 )
 
     """A market-relevant corporate event with temporal provenance."""
