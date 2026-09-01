@@ -4,6 +4,7 @@ from app.models.transcript import Transcript
 from app.models.transcript_segment import TranscriptSegment
 from app.models.filing import Filing
 from app.models.filing_section import FilingSection
+from app.models.price import Price
 
 
 __all__ = [
@@ -13,4 +14,5 @@ __all__ = [
     "TranscriptSegment",
     "Filing",
     "FilingSection",
+    "Price",
 ]
