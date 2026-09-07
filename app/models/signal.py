@@ -20,6 +20,7 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.event import Event
+    from app.models.trade import Trade
 
 
 class Signal(Base):
@@ -48,6 +49,11 @@ class Signal(Base):
         String(32),
         nullable=False,
     )
+
+    trades: Mapped[list[Trade]] = relationship(
+    back_populates="signal",
+    cascade="all, delete-orphan",
+)
 
     model_name: Mapped[str | None] = mapped_column(String(64))
     model_version: Mapped[str | None] = mapped_column(String(64))
