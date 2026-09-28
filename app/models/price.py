@@ -98,7 +98,7 @@ class Price(Base):
             "ticker",
             "price_date",
             "source",
-            name="uq_price_ticker_date_source",
+            name="uq_prices_ticker_date_source",
         ),
-        Index("ix_price_price_date", "price_date"),
+        Index("ix_prices_price_date", "price_date"),
     )
