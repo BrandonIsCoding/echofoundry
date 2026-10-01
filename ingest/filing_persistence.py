@@ -3,10 +3,11 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Event, Filing
+from app.models import Event, Filing, FilingSection
 from ingest.raw_storage import PROJECT_ROOT, ArchivedFiling
 from ingest.sec_client import DownloadedFiling, build_primary_document_url
 from ingest.sec_filings import FilingMetadata
+from ingest.filing_sections import ExtractedSection
 
 
 EVENT_SOURCE = "sec_edgar"
@@ -118,3 +119,79 @@ def persist_filing(
         event_id=event.id,
         already_existed=False,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class PersistedSection:
+    """Identifier of the row written (or found) for one parsed section."""
+
+    filing_section_id: int
+    already_existed: bool
+
+
+def persist_filing_sections(
+    session: Session,
+    *,
+    filing_id: int,
+    sections: list[ExtractedSection],
+) -> list[PersistedSection]:
+    """Insert parsed FilingSection rows for one filing.
+
+    Idempotent per (filing_id, section_type): a section already stored is
+    verified against its content hash and returned, never duplicated. New
+    sections are numbered after any that already exist, so a partial retry
+    can never collide with an existing sequence_number.
+    """
+    existing_by_type = {
+        row.section_type: row
+        for row in session.scalars(
+            select(FilingSection).where(FilingSection.filing_id == filing_id)
+        )
+    }
+
+    next_sequence = (
+        max(
+            (row.sequence_number for row in existing_by_type.values()),
+            default=-1,
+        )
+        + 1
+    )
+
+    results: list[PersistedSection] = []
+
+    for section in sections:
+        existing = existing_by_type.get(section.section_type)
+
+        if existing is not None:
+            if existing.content_hash != section.content_hash:
+                raise ValueError(
+                    f"Filing {filing_id} section '{section.section_type}' "
+                    "is already stored with different content."
+                )
+
+            results.append(
+                PersistedSection(
+                    filing_section_id=existing.id,
+                    already_existed=True,
+                )
+            )
+            continue
+
+        row = FilingSection(
+            filing_id=filing_id,
+            sequence_number=next_sequence,
+            section_type=section.section_type,
+            item_code=section.item_code,
+            heading=section.heading,
+            text=section.text,
+            content_hash=section.content_hash,
+        )
+        session.add(row)
+        session.flush()
+        next_sequence += 1
+
+        results.append(
+            PersistedSection(filing_section_id=row.id, already_existed=False)
+        )
+
+    return results
