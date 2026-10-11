@@ -40,11 +40,11 @@ def black_scholes_call(
     Assumptions
     -----------
     This simplified version assumes:
-    - European exercise only
-    - no dividends
-    - constant volatility
-    - constant risk-free rate
-    - frictionless markets
+    - European exercise only, no arbitrage, the contract is assumed to be held until date. 
+    - No dividends
+    - Constant volatility
+    - Constant risk-free rate
+    - Frictionless markets, ignores fees 
     """
     if spot <= 0:
         raise ValueError("spot must be positive.")
